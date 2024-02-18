@@ -1,4 +1,4 @@
 .                   M                   .                   
 .                   .                   M                   
-A(Lara)             .                   .                   
-T(1)A(TOTO)         T(2)                .                   
+.                   .                   .                   
+A(Lara)             T(2)                .                   

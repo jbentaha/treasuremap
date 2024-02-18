@@ -55,47 +55,54 @@ public class Map {
         }
 
         Element futureBox = elements[newY][newX];
-        if(futureBox instanceof ObstacleI || futureBox.getMovable() != null) { // either the element is an obstacle or an adventurer is already in place
+        if(isBlocked(futureBox)) { // either the element is an obstacle or an adventurer is already in place
             return;
         }
 
         futureBox.addToQueue(adventurer);
 
-        // a small delay before occupying the new box : allows adventures to subscribe.
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-
-        actuallyMove(newX, newY, currentX, currentY, futureBox);
+        actuallyMove(newX, newY, currentX, currentY, futureBox, adventurer);
     }
 
-    private void actuallyMove(int newX, int newY, int currentX, int currentY, Element futureBox) {
+    private void actuallyMove(int newX, int newY, int currentX, int currentY, Element futureBox, Adventurer adventurer) {
 
-        Adventurer priorityAdventurer = futureBox.getPriorityQueue().poll();
+        Adventurer priorityAdventurer = futureBox.getPriorityAdventurer();
 
-        try {
-            // Acquire locks on both current and next boxes to move safely
-            elements[currentY][currentX].getLock().lock();
-            elements[newY][newX].getLock().lock();
+        // check if currentThread(Adventurer) is the same(same reference) as the priorityAdventurer
+        if(adventurer == priorityAdventurer) {
 
-            priorityAdventurer.setCurrentX(newX);
-            priorityAdventurer.setCurrentY(newY);
+            Element newElement = elements[newY][newX];
+            Element currentElement = elements[currentY][currentX];
 
-            elements[currentY][currentX].setMovable(null);
-            elements[newY][newX].setMovable(priorityAdventurer);
+            try {
+                // Acquire locks on both current and next boxes to move safely
+                currentElement.acquireLock();
+                newElement.acquireLock();
 
-            if(elements[newY][newX] instanceof Treasure && ((Treasure) elements[newY][newX]).decreaseNbTreasures()) {
-                priorityAdventurer.incrementTreasures();
+                priorityAdventurer.setPositions(newX, newY);
+
+                currentElement.setMovable(null);
+                newElement.setMovable(priorityAdventurer);
+
+                if(decrementIfHasTreasures(newElement)) {
+                    priorityAdventurer.incrementTreasures();
+                }
+
+                newElement.clearQueue();
+
+            } finally {
+                currentElement.releaseLock();
+                newElement.releaseLock();
             }
-
-            elements[newY][newX].clearQueue();
-
-        } finally {
-            elements[currentY][currentX].getLock().unlock();
-            elements[newY][newX].getLock().unlock();
         }
+    }
+
+    private boolean isBlocked(Element futureBox) {
+        return futureBox instanceof ObstacleI || futureBox.getMovable() != null;
+    }
+
+    private boolean decrementIfHasTreasures(Element newElement) {
+        return newElement instanceof Treasure treasure && treasure.decreaseNbTreasures();
     }
 
 }

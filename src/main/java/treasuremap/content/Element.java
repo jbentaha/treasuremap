@@ -65,4 +65,15 @@ public abstract class Element {
         return lock;
     }
 
+    public void acquireLock() {
+        lock.lock();
+    }
+
+    public void releaseLock() {
+        lock.unlock();
+    }
+
+    public Adventurer getPriorityAdventurer() {
+        return priorityQueue.poll();
+    }
 }

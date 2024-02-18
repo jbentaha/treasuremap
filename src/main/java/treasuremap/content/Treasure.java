@@ -5,18 +5,20 @@ import lombok.Setter;
 import treasuremap.adventurer.MovableI;
 import treasuremap.utils.TRMStringUtils;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class Treasure extends Element {
 
+    @Getter
+    private AtomicInteger nbTreasures = new AtomicInteger();
+
     public Treasure(int nbTreasures) {
-        this.nbTreasures = nbTreasures;
+        this.nbTreasures.set(nbTreasures);
     }
 
-    @Getter
-    private int nbTreasures;
-
     public boolean decreaseNbTreasures() {
-        if(nbTreasures > 0) {
-            --nbTreasures;
+        if(nbTreasures.get() > 0) {
+            nbTreasures.decrementAndGet();
             return true;
         }
 
@@ -28,11 +30,11 @@ public class Treasure extends Element {
         StringBuilder sb = getStringBuilder();
         MovableI movable = getMovable();
 
-        if(nbTreasures == 0 && movable == null) {
+        if(nbTreasures.get() == 0 && movable == null) {
             sb.append(TRMStringUtils.DOT);
         }
 
-        if(nbTreasures > 0) {
+        if(nbTreasures.get() > 0) {
             sb.append(TRMStringUtils.T).append(TRMStringUtils.OPENING_PARENTHESIS).append(nbTreasures).append(TRMStringUtils.CLOSING_PARENTHESIS);
         }
 

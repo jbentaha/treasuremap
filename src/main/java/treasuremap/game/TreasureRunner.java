@@ -1,6 +1,5 @@
 package treasuremap.game;
 
-import lombok.extern.slf4j.Slf4j;
 import treasuremap.adventurer.Adventurer;
 import treasuremap.adventurer.MovableI;
 import treasuremap.content.Element;
@@ -26,9 +25,9 @@ public class TreasureRunner {
 
     private static final String OUTPUT_FILE_PATH = "src/main/resources/treasuremap-output-data.txt";
 
-    private List<ElementPositions> elementPositions = new ArrayList<>();
+    private final List<ElementPositions> elementPositions = new ArrayList<>();
 
-    private Queue<MovableI> adventurers = new PriorityQueue<>();
+    private final Queue<MovableI> movables = new PriorityQueue<>();
 
     private Map map;
 
@@ -39,24 +38,24 @@ public class TreasureRunner {
 
     private void runGame() throws IOException {
 
-        ExecutorService executorService = Executors.newFixedThreadPool(adventurers.size());
+        ExecutorService executorService = Executors.newFixedThreadPool(movables.size());
 
-        while(!adventurers.isEmpty()) {
-            MovableI adventurer = adventurers.poll();
+        while(!movables.isEmpty()) {
+            MovableI movable = movables.poll();
 
             executorService.submit(() -> {
-                adventurer.move();
+                movable.move();
             });
         }
 
         executorService.shutdown();
 
-        /*try {
+        try {
             executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         } catch (InterruptedException e) {
             System.err.println("An adventurer was interrupted");
             throw new RuntimeException("An adventurer was interrupted");
-        }*/
+        }
 
         printResult();
     }
@@ -167,7 +166,7 @@ public class TreasureRunner {
         List<InstructionEnum> instructions = getInstructions(split[5].trim());
 
         Adventurer adventurer = new Adventurer(map, name, priority, x, y, orientation, instructions);
-        adventurers.add(adventurer);
+        movables.add(adventurer);
 
         plain.setMovable(adventurer);
         return new ElementPositions(plain, x, y);

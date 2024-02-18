@@ -103,4 +103,8 @@ public class Adventurer implements MovableI, Comparable<Adventurer> {
         }
     }
 
+    public void setPositions(int newX, int newY) {
+        currentX = newX;
+        currentY = newY;
+    }
 }
