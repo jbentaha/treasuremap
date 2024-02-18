@@ -10,9 +10,10 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+@Getter
 public abstract class Element {
 
-    private static final ThreadLocal<StringBuilder> threadLocal = new ThreadLocal<StringBuilder>() {
+    private static final ThreadLocal<StringBuilder> threadLocal = new ThreadLocal<>() {
 
         @Override
         protected StringBuilder initialValue() {
@@ -28,13 +29,10 @@ public abstract class Element {
 
     };
 
-    @Getter
     private PriorityBlockingQueue<Adventurer> priorityQueue;
 
-    @Getter
     private Lock lock;
 
-    @Getter
     @Setter
     private MovableI movable;
 
@@ -53,16 +51,8 @@ public abstract class Element {
         priorityQueue.add(adventurer);
     }
 
-    public PriorityBlockingQueue<Adventurer> getPriorityQueue() {
-        return priorityQueue;
-    }
-
     public void clearQueue() {
         priorityQueue.clear();
-    }
-
-    public Lock getLock() {
-        return lock;
     }
 
     public void acquireLock() {

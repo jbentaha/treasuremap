@@ -29,7 +29,7 @@ public class TreasureRunner {
 
     private final Queue<MovableI> movables = new PriorityQueue<>();
 
-    private Map map;
+    protected Map map;
 
     public void run() throws IOException {
         initGameMap();
@@ -43,9 +43,7 @@ public class TreasureRunner {
         while(!movables.isEmpty()) {
             MovableI movable = movables.poll();
 
-            executorService.submit(() -> {
-                movable.move();
-            });
+            executorService.submit(movable::move);
         }
 
         executorService.shutdown();
@@ -60,14 +58,13 @@ public class TreasureRunner {
         printResult();
     }
 
-    private void printResult() throws IOException {
+    protected void printResult() throws IOException {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE_PATH))) {
 
             Element[][] elements = map.getElements();
-            for (int i = 0; i < elements.length; i++) {
-                for (int j = 0; j < elements[i].length; j++) {
-                    Element element = elements[i][j];
+            for (Element[] value : elements) {
+                for (Element element : value) {
                     String elementString = element.toString();
                     writer.write(elementString);
                     writeSpaces(writer, elementString);
@@ -92,7 +89,7 @@ public class TreasureRunner {
     }
 
     private void initGameMap() throws IOException {
-        try (BufferedReader br = new BufferedReader(new FileReader(INPUT_FILE_PATH))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(getInputFilePath()))) {
 
             String line;
             int counter = 1;
@@ -114,6 +111,10 @@ public class TreasureRunner {
         map.fillPlainElements();
     }
 
+    protected String getInputFilePath() {
+        return INPUT_FILE_PATH;
+    }
+
     private void processLine(String line, int counter) {
         String[] split = line.split(TRMStringUtils.DASH);
 
@@ -121,18 +122,10 @@ public class TreasureRunner {
 
         ElementEnum elementEnum = getElement(split[0].trim());
         switch (elementEnum) {
-            case A -> {
-                elementPosition = createAdventurer(split, counter);
-            }
-            case C -> {
-                map = createMap(split);
-            }
-            case M -> {
-                elementPosition = createMountain(split);
-            }
-            case T -> {
-                elementPosition = createTreasure(split);
-            }
+            case A -> elementPosition = createAdventurer(split, counter);
+            case C -> map = createMap(split);
+            case M -> elementPosition = createMountain(split);
+            case T -> elementPosition = createTreasure(split);
         }
 
         if(elementPosition != null) {
@@ -141,9 +134,9 @@ public class TreasureRunner {
     }
 
     private ElementPositions createTreasure(String[] split) {
-        Integer x = Integer.valueOf(split[1].trim());
-        Integer y = Integer.valueOf(split[2].trim());
-        Integer nbTreasures = Integer.valueOf(split[3].trim());
+        int x = Integer.parseInt(split[1].trim());
+        int y = Integer.parseInt(split[2].trim());
+        int nbTreasures = Integer.parseInt(split[3].trim());
 
         Treasure treasure = new Treasure(nbTreasures);
 
@@ -151,8 +144,8 @@ public class TreasureRunner {
     }
 
     private ElementPositions createMountain(String[] split) {
-        Integer x = Integer.valueOf(split[1].trim());
-        Integer y = Integer.valueOf(split[2].trim());
+        int x = Integer.parseInt(split[1].trim());
+        int y = Integer.parseInt(split[2].trim());
         return new ElementPositions(new Mountain(), x, y);
     }
 
@@ -160,8 +153,8 @@ public class TreasureRunner {
         Plain plain = new Plain();
 
         String name = split[1].trim();
-        Integer x = Integer.valueOf(split[2].trim());
-        Integer y = Integer.valueOf(split[3].trim());
+        int x = Integer.parseInt(split[2].trim());
+        int y = Integer.parseInt(split[3].trim());
         OrientationEnum orientation = getOrientation(split[4].trim());
         List<InstructionEnum> instructions = getInstructions(split[5].trim());
 
@@ -187,8 +180,12 @@ public class TreasureRunner {
     }
 
     private Map createMap(String[] split) {
-        int columns = Integer.valueOf(split[1].trim());
-        int rows = Integer.valueOf(split[2].trim());
+        int columns = Integer.parseInt(split[1].trim());
+        int rows = Integer.parseInt(split[2].trim());
+
+        if(rows == 0 && columns == 0) {
+            throw new IllegalArgumentException("Cannot initialize map");
+        }
 
         return new Map(rows, columns);
     }

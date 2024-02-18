@@ -8,10 +8,10 @@ import treasuremap.content.Treasure;
 import treasuremap.enums.DirectionEnum;
 import treasuremap.content.obstacle.ObstacleI;
 
+@Getter
 public class Map {
 
-    @Getter
-    private Element[][] elements;
+    private final Element[][] elements;
 
     public Map(int rows, int columns) {
         elements = new Element[rows][columns];
@@ -40,18 +40,10 @@ public class Map {
         int newY = currentY;
 
         switch (direction) {
-            case UP -> {
-                newY = Math.max(0, currentY - 1);
-            }
-            case DOWN -> {
-                newY = Math.min(elements.length - 1, currentY + 1);
-            }
-            case LEFT -> {
-                newX = Math.max(0, currentX - 1);
-            }
-            case RIGHT -> {
-                newX = Math.min(elements[0].length - 1, currentY + 1);
-            }
+            case UP -> newY = Math.max(0, currentY - 1);
+            case DOWN -> newY = Math.min(elements.length - 1, currentY + 1);
+            case LEFT -> newX = Math.max(0, currentX - 1);
+            case RIGHT -> newX = Math.min(elements[0].length - 1, currentY + 1);
         }
 
         Element futureBox = elements[newY][newX];
@@ -61,39 +53,35 @@ public class Map {
 
         futureBox.addToQueue(adventurer);
 
-        actuallyMove(newX, newY, currentX, currentY, futureBox, adventurer);
+        actuallyMove(newX, newY, currentX, currentY, futureBox);
     }
 
-    private void actuallyMove(int newX, int newY, int currentX, int currentY, Element futureBox, Adventurer adventurer) {
+    private void actuallyMove(int newX, int newY, int currentX, int currentY, Element futureBox) {
 
         Adventurer priorityAdventurer = futureBox.getPriorityAdventurer();
 
-        // check if currentThread(Adventurer) is the same(same reference) as the priorityAdventurer
-        if(adventurer == priorityAdventurer) {
+        Element newElement = elements[newY][newX];
+        Element currentElement = elements[currentY][currentX];
 
-            Element newElement = elements[newY][newX];
-            Element currentElement = elements[currentY][currentX];
+        try {
+            // Acquire locks on both current and next boxes to move safely
+            currentElement.acquireLock();
+            newElement.acquireLock();
 
-            try {
-                // Acquire locks on both current and next boxes to move safely
-                currentElement.acquireLock();
-                newElement.acquireLock();
+            priorityAdventurer.setPositions(newX, newY);
 
-                priorityAdventurer.setPositions(newX, newY);
+            currentElement.setMovable(null);
+            newElement.setMovable(priorityAdventurer);
 
-                currentElement.setMovable(null);
-                newElement.setMovable(priorityAdventurer);
-
-                if(decrementIfHasTreasures(newElement)) {
-                    priorityAdventurer.incrementTreasures();
-                }
-
-                newElement.clearQueue();
-
-            } finally {
-                currentElement.releaseLock();
-                newElement.releaseLock();
+            if(decrementIfHasTreasures(newElement)) {
+                priorityAdventurer.incrementTreasures();
             }
+
+            newElement.clearQueue();
+
+        } finally {
+            currentElement.releaseLock();
+            newElement.releaseLock();
         }
     }
 

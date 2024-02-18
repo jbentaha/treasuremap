@@ -1,7 +1,5 @@
 package treasuremap.content;
 
-import lombok.Getter;
-import lombok.Setter;
 import treasuremap.adventurer.MovableI;
 import treasuremap.utils.TRMStringUtils;
 
@@ -9,8 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Treasure extends Element {
 
-    @Getter
-    private AtomicInteger nbTreasures = new AtomicInteger();
+    private final AtomicInteger nbTreasures = new AtomicInteger();
 
     public Treasure(int nbTreasures) {
         this.nbTreasures.set(nbTreasures);
@@ -23,6 +20,10 @@ public class Treasure extends Element {
         }
 
         return false;
+    }
+
+    public int getNbTreasures() {
+        return nbTreasures.get();
     }
 
     @Override

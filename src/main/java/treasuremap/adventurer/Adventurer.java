@@ -7,19 +7,18 @@ import treasuremap.enums.InstructionEnum;
 import treasuremap.enums.OrientationEnum;
 import treasuremap.game.Map;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Adventurer implements MovableI, Comparable<Adventurer> {
 
-    private Map map;
+    private final Map map;
 
     @Getter
-    private List<InstructionEnum> instructions;
+    private final List<InstructionEnum> instructions;
 
     private OrientationEnum orientation;
 
-    private int priority;
+    private final int priority;
 
     @Getter
     private String name;
@@ -49,6 +48,11 @@ public class Adventurer implements MovableI, Comparable<Adventurer> {
         ++nbTreasures;
     }
 
+    public void setPositions(int newX, int newY) {
+        currentX = newX;
+        currentY = newY;
+    }
+
     @Override
     public void move() {
         for (InstructionEnum instruction : instructions) {
@@ -68,18 +72,10 @@ public class Adventurer implements MovableI, Comparable<Adventurer> {
 
     private void updateOrientation(boolean right) {
         switch (orientation) {
-            case S -> {
-                orientation = right ? OrientationEnum.O : OrientationEnum.E;
-            }
-            case N -> {
-                orientation = right ? OrientationEnum.E : OrientationEnum.O;
-            }
-            case E -> {
-                orientation = right ? OrientationEnum.S : OrientationEnum.N;
-            }
-            case O -> {
-                orientation = right ? OrientationEnum.N : OrientationEnum.S;
-            }
+            case S -> orientation = right ? OrientationEnum.O : OrientationEnum.E;
+            case N -> orientation = right ? OrientationEnum.E : OrientationEnum.O;
+            case E -> orientation = right ? OrientationEnum.S : OrientationEnum.N;
+            case O -> orientation = right ? OrientationEnum.N : OrientationEnum.S;
         }
     }
 
@@ -103,8 +99,4 @@ public class Adventurer implements MovableI, Comparable<Adventurer> {
         }
     }
 
-    public void setPositions(int newX, int newY) {
-        currentX = newX;
-        currentY = newY;
-    }
 }

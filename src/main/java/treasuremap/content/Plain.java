@@ -1,6 +1,5 @@
 package treasuremap.content;
 
-import treasuremap.adventurer.Adventurer;
 import treasuremap.adventurer.MovableI;
 import treasuremap.utils.TRMStringUtils;
 

@@ -1,0 +1,5 @@
+# Ignore everything under .idea/
+.idea/*
+
+# Ignore the entire /target/ directory
+/target/
